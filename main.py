@@ -14,6 +14,8 @@ logging.basicConfig(
 def main() -> None:
     load_dotenv()
     token = os.environ["TELEGRAM_BOT_TOKEN"]
+    if not os.environ.get("OPENROUTER_API_KEY"):
+        raise SystemExit("OPENROUTER_API_KEY is not set")
     app = build_app(token)
     app.run_polling()
 

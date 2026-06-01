@@ -10,34 +10,34 @@ from telegram.ext import (
     filters,
 )
 
-from .duck_client import DuckAISession, Model
+from .ai_client import ChatSession, Model
 
 logger = logging.getLogger(__name__)
 
 MODEL_LABELS: dict[Model, str] = {
-    Model.GPT4O_MINI: "GPT-4o Mini",
-    Model.CLAUDE_HAIKU: "Claude 3 Haiku",
-    Model.LLAMA: "Llama 3.1 70B",
+    Model.GEMINI_FLASH: "Gemini 2.0 Flash",
+    Model.DEEPSEEK: "DeepSeek V3",
+    Model.LLAMA: "Llama 3.3 70B",
+    Model.QWEN: "Qwen 2.5 72B",
     Model.MISTRAL: "Mistral Small",
-    Model.O3_MINI: "o3-mini",
 }
 
-# {user_id: DuckAISession}
-_sessions: dict[int, DuckAISession] = {}
+# {user_id: ChatSession}
+_sessions: dict[int, ChatSession] = {}
 
 
-async def _get_session(user_id: int) -> DuckAISession:
+async def _get_session(user_id: int) -> ChatSession:
     if user_id not in _sessions:
-        session = DuckAISession()
+        session = ChatSession()
         await session.start()
         _sessions[user_id] = session
     return _sessions[user_id]
 
 
-async def _replace_session(user_id: int, model: Model) -> DuckAISession:
+async def _replace_session(user_id: int, model: Model) -> ChatSession:
     if user_id in _sessions:
         await _sessions.pop(user_id).close()
-    session = DuckAISession(model=model)
+    session = ChatSession(model=model)
     await session.start()
     _sessions[user_id] = session
     return session
@@ -46,7 +46,7 @@ async def _replace_session(user_id: int, model: Model) -> DuckAISession:
 async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(
         "Hi! I'm Poly 🦆\n\n"
-        "I give you free access to AI models via duck.ai.\n\n"
+        "I give you free access to multiple AI models.\n\n"
         "Just send me a message to start chatting.\n\n"
         "/new — fresh conversation\n"
         "/model — switch AI model\n"
@@ -101,7 +101,7 @@ async def on_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
     except Exception:
         logger.exception("Error handling message for user %d", user_id)
         await update.message.reply_text(
-            "Something went wrong talking to duck.ai. Try /new to reset."
+            "Something went wrong talking to the AI service. Try /new to reset."
         )
 
 
